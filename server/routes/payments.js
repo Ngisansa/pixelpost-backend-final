@@ -5,9 +5,9 @@ const router = express.Router();
 const paystack = require("../payments/paystack");
 const paypal = require("../payments/paypal");
 
-/* =====================================================
-   PAYSTACK – INIT PAYMENT
-===================================================== */
+/* =======================
+   PAYSTACK INIT
+======================= */
 router.post("/paystack/init", async (req, res) => {
   try {
     const { email, amount } = req.body;
@@ -16,61 +16,50 @@ router.post("/paystack/init", async (req, res) => {
       return res.status(400).json({ error: "email and amount required" });
     }
 
-    const response = await paystack.initialize(email, amount);
-    res.json(response);
+    const result = await paystack.initialize(email, amount);
+    res.json(result);
   } catch (err) {
-    console.error("❌ Paystack init error:", err);
-    res.status(500).json({ error: "Payment initialization failed" });
+    console.error("❌ Paystack init:", err);
+    res.status(500).json({ error: "Paystack init failed" });
   }
 });
 
-/* =====================================================
-   PAYSTACK – VERIFY PAYMENT
-===================================================== */
+/* =======================
+   PAYSTACK VERIFY
+======================= */
 router.get("/paystack/verify/:reference", async (req, res) => {
   try {
-    const { reference } = req.params;
-    const response = await paystack.verify(reference);
-    res.json(response);
+    const result = await paystack.verify(req.params.reference);
+    res.json(result);
   } catch (err) {
-    console.error("❌ Paystack verify error:", err);
-    res.status(500).json({ error: "Payment verification failed" });
+    console.error("❌ Paystack verify:", err);
+    res.status(500).json({ error: "Verification failed" });
   }
 });
 
-/* =====================================================
-   PAYSTACK – WEBHOOK
-   (KES + MPesa compatible)
-===================================================== */
+/* =======================
+   PAYSTACK WEBHOOK
+======================= */
 router.post(
   "/paystack/webhook",
   express.json({ type: "*/*" }),
   async (req, res) => {
     try {
-      const event = req.body;
-
-      if (event.event === "charge.success") {
-        const data = event.data;
-
-        console.log("✅ Paystack webhook received:", data.reference);
-
-        // TODO (next step):
-        // 1. Find user by email
-        // 2. Increment credits
-        // 3. Store transaction
+      if (req.body?.event === "charge.success") {
+        console.log("✅ Paystack webhook:", req.body.data.reference);
+        // credit increment comes next
       }
-
       res.sendStatus(200);
     } catch (err) {
-      console.error("❌ Paystack webhook error:", err);
+      console.error("❌ Webhook error:", err);
       res.sendStatus(500);
     }
   }
 );
 
-/* =====================================================
+/* =======================
    PAYPAL
-===================================================== */
+======================= */
 router.post("/paypal/create", paypal.createOrder);
 router.post("/paypal/capture", paypal.captureOrder);
 
