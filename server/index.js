@@ -24,7 +24,6 @@ app.use(morgan("combined"));
 app.use("/users", require("./routes/users"));
 app.use("/api/posts", require("./routes/posts"));
 app.use("/payments", require("./routes/payments"));
-app.use("/webhooks", require("./routes/paystack-webhook"));
 
 /* ======================
    Health Check
@@ -34,27 +33,24 @@ app.get("/", (req, res) => {
 });
 
 /* ======================
-   Database + Server Boot
+   Database + Server
 ====================== */
 mongoose.set("bufferCommands", false);
 
 const PORT = process.env.PORT || 3000;
 
 mongoose
-  .connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000,
-  })
+  .connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => {
     console.log("✅ Mongo connected");
 
-    // Start background scheduler ONLY after DB is ready
     require("./cron/scheduler");
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running on port ${PORT}`)
+    );
   })
   .catch((err) => {
-    console.error("❌ Mongo connection failed:", err);
+    console.error("❌ Mongo failed:", err);
     process.exit(1);
   });
