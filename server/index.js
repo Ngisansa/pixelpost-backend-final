@@ -5,6 +5,9 @@ const cors = require("cors");
 
 const app = express();
 
+const morgan = require('morgan');
+app.use(morgan('combined'));
+
 /* =====================
    Middleware
 ===================== */
