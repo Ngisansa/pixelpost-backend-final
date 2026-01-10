@@ -23,7 +23,7 @@ app.use(morgan("combined"));
 ====================== */
 app.use("/users", require("./routes/users"));
 app.use("/api/posts", require("./routes/posts"));
-app.use("/payments", require("./routes/payments"));
+app.use("/api/payments", require("./routes/payments"));
 
 /* ======================
    Health Check
